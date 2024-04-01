@@ -210,7 +210,7 @@ export default function MyFavoriteLyrics() {
                     {lyric.albumArtUrl && (
                     <div>
                       <img 
-                        src={URL.createObjectURL(lyric.albumArtUrl)} 
+                        src={lyric.albumArtUrl} 
                         alt='Album Art'
                         style={{ width: '115px', height: '115px '}}
                       />

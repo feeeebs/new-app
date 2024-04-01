@@ -59,11 +59,6 @@ export default function QuizResults(props) {
 
   // TO DO: add links to album pages
   // TO DO: add album descriptions as <Card.Text>
-//   <img 
-//   src={URL.createObjectURL(album.albumArtUrl)} 
-//   alt='Album Art'
-//   style={{ width: '115px', height: '115px '}}
-// />
 
 if (loading) {
   return <h3>Loading...</h3>
@@ -85,7 +80,7 @@ if (loading) {
                     <Col md={4}>
                       <Card.Img 
                           variant="middle" 
-                          src={URL.createObjectURL(album.albumArtUrl)}
+                          src={album.albumArtUrl}
                           style={{ width: '200px', height: '200px' }}
                       />
                     </Col>
