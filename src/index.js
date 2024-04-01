@@ -18,8 +18,8 @@ root.render(
         crossOrigin="anonymous"
     />
     <Auth0Provider
-      domain="dev-v7r2nkibjlmlj717.us.auth0.com"
-      clientId="4Scu56U3UQaERmPWdAxqY42er4vuhdmF"
+      domain={process.env.REACT_APP_AUTH0_DOMAIN}
+      clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
       authorizationParams={{
         redirect_uri: window.location.origin,
         audience: 'https://standom-api', // Auth0 API (audience) ID used to issue an access token for calls to the backend.
@@ -27,10 +27,10 @@ root.render(
       }}>
         <SquidContextProvider
           options={{
-            appId: '4e3yja9i5vo8i2t4ch',
-            region: 'us-east-1.aws', // example: 'us-east-1.aws'
-            environmentId: 'dev', // choose one of 'dev' or 'prod'
-            squidDeveloperId: 'u9c239qpm51zgzhxit',
+            appId: process.env.REACT_APP_SQUID_APP_ID,
+            region: process.env.REACT_APP_SQUID_REGION, // example: 'us-east-1.aws'
+            environmentId: process.env.REACT_APP_SQUID_ENVIRONMENT_ID, // choose one of 'dev' or 'prod'
+            squidDeveloperId: process.env.REACT_APP_SQUID_DEVELOPER_ID,
           }}>
             <Provider store={store}>
               <App />
