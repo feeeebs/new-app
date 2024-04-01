@@ -1,4 +1,4 @@
-
+import 'instantsearch.css/themes/satellite.css';
 import { Configure, Hits, InstantSearch, SearchBox } from "react-instantsearch";
 import algoliaClient from "./algoliaConfig";
 import { useSelector } from "react-redux";
