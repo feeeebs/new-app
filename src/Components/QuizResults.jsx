@@ -27,12 +27,12 @@ export default function QuizResults(props) {
           let updatedAlbumJourney = [...albumJourney];
         
           for (const albumRow of albumSnapshot) {
-            const {album_id, album_title, album_art_key} = albumRow;
+            const {album_id, album_title, album_art_key, album_description } = albumRow;
             console.log('albumRow: ', albumRow)
             // Fetch album art from S3
             const albumArtUrl = await FetchAlbumArtFromS3(album_art_key);
 
-            const albumObject = { album_id: album_id, albumTitle: album_title, albumArtUrl: albumArtUrl };
+            const albumObject = { album_id: album_id, albumTitle: album_title, albumArtUrl: albumArtUrl, albumDescription: album_description };
             console.log('albumObject: ', albumObject);
             // Add albumObject to albumJourney
               updatedAlbumJourney = updatedAlbumJourney.map(item => {
@@ -74,7 +74,7 @@ if (loading) {
                     <Col md={8}>
                       <Card.Title>{album.albumTitle}</Card.Title>
                       <Card.Text>
-                        Description of album goes here
+                        {album.albumDescription}
                       </Card.Text>
                     </Col>
                     <Col md={4}>
