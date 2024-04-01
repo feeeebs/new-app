@@ -175,9 +175,10 @@ export default function MyFavoriteLyrics() {
   // TO DO: ADD FILTERS AND SORTING BY ALBUM/SONG
   
   return (
-    <Card>
+    <Card className='mb-5'>
       <Card.Body>
         <h2 className='text-center mb-4'>My Favorite Lyrics</h2>
+        <h6 className='text-center mb-3'>Lyrics available through Fearless TV... more coming soon :)</h6>
           <Button className='mb-2' onClick={handleClick}>Add New Lyrics</Button>
           {loading ? (
             <div className='text-center mb-3'>In search of glorious happenings of happenstance...</div>
@@ -220,10 +221,10 @@ export default function MyFavoriteLyrics() {
               </ListGroup.Item>
             ))
             ) : (
-              <>
-              <div>You haven't saved any favorites yet.</div>
-              <div>Try searching "aurora borealis green"</div>
-              </>
+              <div className='d-flex flex-column align-items-center justify-content-center'>
+                <div>You haven't saved any favorites yet.</div>
+                <div>Try searching "aurora borealis green"</div>
+              </div>
             )}
           </ListGroup>
           )}

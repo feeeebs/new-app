@@ -21,7 +21,7 @@ export default function Dashboard({ userInfo }) {
             <Row>
                 <QuizParent />
             </Row>
-            <Row>
+            <Row className='mt-3'>
                 <MyFavoriteLyrics />
             </Row>
         </Container>
