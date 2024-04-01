@@ -13,6 +13,8 @@ export default function QuizResults(props) {
     console.log('albumJourney: ', albumJourney);
   }, [albumJourney]);
 
+  // Add zero score albums to albumJourney
+
   useEffect(() => {
       // GET ALBUM INFO
       const getAlbumInfo = async () => {
@@ -20,7 +22,6 @@ export default function QuizResults(props) {
 
           const albumSnapshot = await albumsCollection
           .query()
-          .lte('album_id', 5)
           .dereference()
           .snapshot();
 
@@ -28,12 +29,12 @@ export default function QuizResults(props) {
         
           for (const albumRow of albumSnapshot) {
             const {album_id, album_title, album_art_key, album_description } = albumRow;
-            console.log('albumRow: ', albumRow)
+            //console.log('albumRow: ', albumRow)
             // Fetch album art from S3
             const albumArtUrl = await FetchAlbumArtFromS3(album_art_key);
 
             const albumObject = { album_id: album_id, albumTitle: album_title, albumArtUrl: albumArtUrl, albumDescription: album_description };
-            console.log('albumObject: ', albumObject);
+            //console.log('albumObject: ', albumObject);
             // Add albumObject to albumJourney
               updatedAlbumJourney = updatedAlbumJourney.map(item => {
                 if (item.album_id === albumObject.album_id) {

@@ -14,11 +14,13 @@ export default function Quiz(props) {
     const [loading, setLoading] = useState(true);
     const [disableButton, setDisableButton] = useState(true);
     const [totalScore, setTotalScore] = useState([]);
+    const [allAlbums, setAllAlbums] = useState([]); // Array of all albums in the DB
     
     const questionCollection = useCollection('quiz_questions', 'postgres_id'); // DB reference to quiz questions
     const answerCollection = useCollection('quiz_answers', 'postgres_id'); // DB reference to quiz answers
     const userQuizCollection = useCollection('user_quizzes', 'postgres_id'); // DB reference to user quizzes
     const quizScoringCollection = useCollection('quiz_scoring', 'postgres_id'); // DB reference to quiz scores
+    const albumsCollection = useCollection('albums', 'postgres_id'); // DB reference to albums
 
     const createQuiz = []; // Just used to store quiz as it's being collected from the DB
 
@@ -28,10 +30,29 @@ export default function Quiz(props) {
 
     const userAnswers = useSelector(state => state.quiz.userAnswers);
 
-    // useEffect(() => {
-    //     console.log('total score: ', totalScore);
-    //     console.log('album journey: ', albumJourney);
-    // }, [totalScore, albumJourney]);
+    useEffect(() => {
+        console.log('total score: ', totalScore);
+        //console.log('album journey: ', albumJourney);
+        console.log('all albums: ', allAlbums);
+    }, [totalScore, allAlbums]);
+
+    // get list of albums from DB
+    useEffect(() => {
+        const getAlbums = async () => {
+            const albumList = [];
+            try {
+                const albumSnapshot = await albumsCollection.query().dereference().snapshot();
+                albumSnapshot.forEach(albumRow => {
+                    const { album_id, album_title, album_art_key, album_description } = albumRow;
+                    albumList.push({ album_id, album_title, album_art_key, album_description });
+                })
+                setAllAlbums(albumList);
+            } catch (error) {
+                console.error('Error fetching albums:', error);
+            }
+        }
+        getAlbums();
+    }, []);
 
 
     useEffect(() => {
@@ -62,14 +83,6 @@ export default function Quiz(props) {
                 })
                 // Store final quiz in redux
                 dispatch(setFinalQuiz(createQuiz));
-
-
-                //console.log('about to set questions: ', finalQuiz[questionIndex]);
-                //console.log('questionIndex: ', questionIndex);
-
-
-                //console.log('fullQuiz: ', finalQuiz);
-                //console.log("length of fullQuiz: ", Object.keys(finalQuiz).length);
                 setLoading(false);
 
             } catch (error) {
@@ -79,9 +92,24 @@ export default function Quiz(props) {
 
         getQuiz();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        // Convert totalScore into an array of objects
+        const totalScoreArray = Object.entries(totalScore).map(([album_id, score]) => ({ album_id, score }));
+
+        // Sort the array by score from biggest to smallest
+        totalScoreArray.sort((a, b) => b.score - a.score);
+
+        // Convert the sorted array back into an object
+        // Sort the totalScore array by score from biggest to smallest
+        const sortedTotalScore = [...totalScore].sort((a, b) => b.score - a.score);
+
+        console.log('sortedTotalScore: ', sortedTotalScore);
+        // Update the albumJourney state
+        props.setAlbumJourney(sortedTotalScore);
+
+    }, [totalScore]);
 
     // Set up final quiz and first question
     const finalQuiz = useSelector(state => state.quiz.finalQuiz)
@@ -106,8 +134,6 @@ export default function Quiz(props) {
     // Function to insert quiz data into Postgres 
     const insertUserAnswersToDb = async () => {
         console.log('inserting quizAnswers: ', userAnswers);
-        const userQuizlog = await userQuizCollection.query().dereference().snapshot();
-        console.log('results: ', userQuizlog);
 
         // TO DO - add the timestamp back into the DB insert once the squid schema updates
         //const currentDate = new Date(); // Get current date/time
@@ -117,10 +143,10 @@ export default function Quiz(props) {
             const answerId = parseInt(userAnswers[questionId]);
             const userAnswerId = uuidv4();
 
-            console.log('user_answer_id: ', userAnswerId);
-            console.log('user_id: ', userId);
-            console.log('question_id: ', parseInt(questionId));
-            console.log('answer_id: ', answerId);
+            // console.log('user_answer_id: ', userAnswerId);
+            // console.log('user_id: ', userId);
+            // console.log('question_id: ', parseInt(questionId));
+            // console.log('answer_id: ', answerId);
             //console.log('timestamp: ', formattedDate);
 
 
@@ -146,19 +172,21 @@ export default function Quiz(props) {
         
         // check if quiz is completed
         if (newIndex === quizLength) {
-            // Convert totalScore into an array of objects
-            const totalScoreArray = Object.entries(totalScore).map(([album_id, score]) => ({ album_id, score }));
+            // If the album_id is not in totalScoreArray, add it with a score of 0
+            let updatedTotalScore = [...totalScore];
+            allAlbums.forEach(album => {
+                if (!updatedTotalScore.some(item => item.album_id === album)) {
+                    const album_id = album.album_id;
+                    const albumTitle = album.album_title;
+                    const albumArtUrl = album.album_art_key;
+                    const albumDescription = album.album_description;
 
-            // Sort the array by score from biggest to smallest
-            totalScoreArray.sort((a, b) => b.score - a.score);
+                    updatedTotalScore.push({ album_id: album_id, score: 0, albumTitle: albumTitle, albumArtUrl:albumArtUrl, albumDescription: albumDescription });
+                }
+            });
+            setTotalScore(updatedTotalScore);
 
-            // Convert the sorted array back into an object
-            // Sort the totalScore array by score from biggest to smallest
-            const sortedTotalScore = [...totalScore].sort((a, b) => b.score - a.score);
-
-            // Update the albumJourney state
-            props.setAlbumJourney(sortedTotalScore);
-
+            // PUT BACK TOTAL SCORE STUFF HERE IF IT DOENS'T WORK
 
             // Update quiz status in Redux
             dispatch(updateQuizTaken(true));
@@ -172,8 +200,8 @@ export default function Quiz(props) {
             // Get the answer's scores from the quiz_scoring table
             const getScores = async () => {
                 const answerId = parseInt(userAnswers[questionIndex]);
-                console.log('getting snapshot for answer_id: ', answerId);
-                console.log('getting snapshot for question_id: ', finalQuiz[questionIndex].question.question_id);
+                //console.log('getting snapshot for answer_id: ', answerId);
+                //console.log('getting snapshot for question_id: ', finalQuiz[questionIndex].question.question_id);
                 const scoreSnapshot = await quizScoringCollection
                     .query()
                     .eq('answer_id', answerId)
@@ -181,11 +209,11 @@ export default function Quiz(props) {
                     .dereference()
                     .snapshot();
                 
-                console.log('scoreSnapshot: ', scoreSnapshot);
+                //console.log('scoreSnapshot: ', scoreSnapshot);
                 scoreSnapshot.forEach(scoreRow => {
                     const { album_id, score } = scoreRow;
-                    console.log('album_id: ', album_id);
-                    console.log('score: ', score);
+                    //console.log('album_id: ', album_id);
+                    //console.log('score: ', score);
 
                     // Update the total score state
                     setTotalScore(prevTotalScore => {
@@ -206,8 +234,8 @@ export default function Quiz(props) {
             await getScores();
 
             // Get the next question from fullQuiz
-            console.log('setting next question: ', finalQuiz[newIndex])
-            console.log('fullquiz after submit: ', finalQuiz)
+            //console.log('setting next question: ', finalQuiz[newIndex])
+            //console.log('fullquiz after submit: ', finalQuiz)
             const nextQuestion = finalQuiz[newIndex];
             dispatch(setQuestions({ newIndex, nextQuestion }))
             setDisableButton(true);
