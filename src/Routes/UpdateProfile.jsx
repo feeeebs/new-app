@@ -3,7 +3,7 @@ import { Form, Button, Card, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useCollection } from '@squidcloud/react';
 import { useDispatch } from 'react-redux';
-
+import { useNavigate } from 'react-router-dom';
 import NavigationBar from '../Components/NavigationBar';
 import { updateAll } from '../Utilities/Redux/userSlice';
 
@@ -16,7 +16,7 @@ export default function UpdateProfile({ userInfo }) {
     const [loading, setLoading] = useState(false);
     const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
     const dispatch = useDispatch();
-    // //const navigate = useNavigate()
+    const navigate = useNavigate();
 
 
     // Set default form data
@@ -69,7 +69,7 @@ export default function UpdateProfile({ userInfo }) {
 
         setLoading(true);
         setError('');
-
+        navigate('/');
         // Update email
         // if (emailRef.current.value !== currentUser.email) {
 
