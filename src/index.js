@@ -33,7 +33,7 @@ root.render(
             squidDeveloperId: process.env.REACT_APP_SQUID_DEVELOPER_ID,
           }}>
             <Provider store={store}>
-              <App />
+                <App />
             </Provider>
         </SquidContextProvider>
     </Auth0Provider>

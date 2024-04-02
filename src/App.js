@@ -11,25 +11,36 @@ import EditFavoriteLyric from './Routes/EditFavoriteLyric';
 import { updateAll, updateEmail, updateFirstName, updateLastName } from './Utilities/Redux/userSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useAuth0 } from '@auth0/auth0-react'
 import { useSquid, useCollection } from '@squidcloud/react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import PrivateRoute from './Components/PrivateRoute';
+import { auth } from './Utilities/Firebase/firebaseConfig';
+import { useIdToken } from 'react-firebase-hooks/auth';
 
 function App() {
-    // Get user token
-    const { isLoading, user, getAccessTokenSilently, isAuthenticated } = useAuth0();
-    const { setAuthProvider } = useSquid();
     const dispatch = useDispatch();
-  
+    // Get Firebase Authentication state
+    const [user, loading, error] = useIdToken(auth);
+    const { setAuthProvider } = useSquid();
+
     useEffect(() => {
-      if (!isLoading && user) {
-        setAuthProvider({
-          integrationId: 'auth0Id',
-          getToken: () => user && getAccessTokenSilently(),
-        });
+      // Pass the auth token to the Squid backend
+      setAuthProvider({
+        integrationId: 'firebase_auth_id',
+        getToken: async () => {
+          if (!user) return undefined;
+          return await user.getIdToken();
+        },
+      });
+      if (loading) return;
+      if (!user) {
+        // Change the view as needed for when a user is logged out.
+        <Homepage />
+      } else {
+        // Change the view as needed for when a user is logged in.
+        <Dashboard />
       }
-    }, [isLoading, user, getAccessTokenSilently, setAuthProvider]);
+    }, [user, loading, setAuthProvider]);
   
     const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
   
@@ -37,24 +48,24 @@ function App() {
     // ^^ will setting up the session stuff fix that?
   
       // Store initial user info in Redux based on Auth0 default values -- values will update later if user has overwritten this in DB
-      useEffect(() => {
-        if (isAuthenticated && user) {
-          console.log('Authenticated and user stuff running')
-          // Split out first/last names
-          const fullName = user.name;
-          const [firstName, ...lastNames] = fullName.split(' ');
-          const lastName = lastNames.join(' ');
+      // useEffect(() => {
+      //   if (user) {
+      //     console.log('Authenticated and user stuff running')
+      //     // Split out first/last names
+      //     const fullName = user.name;
+      //     const [firstName, ...lastNames] = fullName.split(' ');
+      //     const lastName = lastNames.join(' ');
   
-          console.log('first name: ', firstName);
-          console.log('last name: ', lastName);
-          dispatch(updateAll({
-            id: user.sub,
-            email: user.email,
-            firstName: firstName,
-            lastName: lastName,
-          }))
-        }
-      }, [dispatch, isAuthenticated, user]);
+      //     console.log('first name: ', firstName);
+      //     console.log('last name: ', lastName);
+      //     dispatch(updateAll({
+      //       id: user.sub,
+      //       email: user.email,
+      //       firstName: firstName,
+      //       lastName: lastName,
+      //     }))
+      //   }
+      // }, [dispatch, user]);
       
       // Store initial user info in variables to use here
       const userInformation = useSelector(state => state.user.userInfo);
@@ -173,8 +184,8 @@ const router = createBrowserRouter([
 
 ]);
 
-// If auth0 is checking authentication, return loading page
-if (isLoading) {
+// If firebase is checking authentication, return loading page
+if (loading) {
   return <LoadingPage />;
 }
 

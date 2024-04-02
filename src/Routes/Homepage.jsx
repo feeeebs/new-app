@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react'
-import { Container, Row, Col, Form } from 'react-bootstrap';
+import { Container, Row, Col} from 'react-bootstrap';
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom';
-import LoginButton from '../Components/Login';
+
+import Signup from './Signup';
+import { AuthProvider } from '../Utilities/Firebase/AuthContext';
 
 
 
@@ -23,18 +25,17 @@ export default function Homepage() {
   return (
     <>
       <Container fluid>
-        <Row className='text-center'>
+        <Row >
           <Col>
             <div>
-              <h1>Standom</h1>
+              <h1 className='text-center'>Standom</h1>
             </div>
             <div>
-              <h3>Where every day is The Best Day</h3>
+              <h3 className='text-center'>Where every day is The Best Day</h3>
             </div>
             <div>
-              <Form>
-                <LoginButton />
-              </Form>
+              <h5 className='text-center'>Sign in or sign up to start stanning</h5>
+              <Signup />
             </div>
           </Col>
         </Row>
