@@ -1,10 +1,21 @@
 import { Container, Row, Col} from 'react-bootstrap';
 import Signup from './Signup';
+import { useEffect } from 'react';
+import { useIdToken } from 'react-firebase-hooks/auth';
+import { auth } from '../Utilities/Firebase/firebaseConfig';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Homepage() {
-
-  // TO DO: Add useEffect to check if user is authenticated and navigate to dashboard if so
+  const user = useIdToken(auth);
+  const navigate = useNavigate();
+  
+  // Check if user is authenticated and navigate to dashboard if so
+  // useEffect(() => {
+  //   if (user) {
+  //     navigate('/dashboard');
+  //   }
+  // }, [])
   
   return (
     <>

@@ -1,12 +1,26 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import { Button } from "react-bootstrap";
 import React from "react";
+import { Button } from "react-bootstrap";
+import { getAuth, signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const LogoutButton = () => {
-  const { logout } = useAuth0();
+  const auth = getAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    signOut(auth)
+      .then(() => {
+        console.log("User signed out");
+        navigate("/");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  
+  }
 
   return (
-    <Button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+    <Button onClick={handleLogout}>
       Log Out
     </Button>
   );

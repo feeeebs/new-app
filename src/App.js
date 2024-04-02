@@ -16,6 +16,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import PrivateRoute from './Components/PrivateRoute';
 import { auth } from './Utilities/Firebase/firebaseConfig';
 import { useIdToken } from 'react-firebase-hooks/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import Login from './Routes/Login';
+import Signup from './Routes/Signup';
 
 function App() {
     const dispatch = useDispatch();
@@ -34,39 +37,48 @@ function App() {
       });
       if (loading) return;
       if (!user) {
-        // Change the view as needed for when a user is logged out.
+        // Navigate to the homepage if the user is not logged in
         <Homepage />
       } else {
-        // Change the view as needed for when a user is logged in.
+        // Navigate to the dashboard if the user is logged in
         <Dashboard />
       }
     }, [user, loading, setAuthProvider]);
+
+    // Watch for changes in auth state
+    useEffect(() => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log('User is signed in: ', user);
+          const uid = user.uid;
+
+          //Split out first/last names
+          const fullName = user.displayName;
+
+          // TO DO: GATHER NAME INFO ON SIGN UP
+          // const [firstName, ...lastNames] = fullName.split(' ');
+          // const lastName = lastNames.join(' ');
+  
+          // console.log('first name: ', firstName);
+          // console.log('last name: ', lastName);
+          dispatch(updateAll({
+            id: uid,
+            email: user.email,
+            firstName: fullName,
+            lastName: fullName,
+          }))
+        
+        } else {
+          console.log('No user is signed in');
+        }
+      });
+    }, [])
   
     const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
   
     // ***** TO DO EVENTUALLY ***** -- update to only have the user information query/update once after login instead of every time page loads
     // ^^ will setting up the session stuff fix that?
   
-      // Store initial user info in Redux based on Auth0 default values -- values will update later if user has overwritten this in DB
-      // useEffect(() => {
-      //   if (user) {
-      //     console.log('Authenticated and user stuff running')
-      //     // Split out first/last names
-      //     const fullName = user.name;
-      //     const [firstName, ...lastNames] = fullName.split(' ');
-      //     const lastName = lastNames.join(' ');
-  
-      //     console.log('first name: ', firstName);
-      //     console.log('last name: ', lastName);
-      //     dispatch(updateAll({
-      //       id: user.sub,
-      //       email: user.email,
-      //       firstName: firstName,
-      //       lastName: lastName,
-      //     }))
-      //   }
-      // }, [dispatch, user]);
-      
       // Store initial user info in variables to use here
       const userInformation = useSelector(state => state.user.userInfo);
       const { id, email, firstName, lastName } = userInformation;
@@ -152,6 +164,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <Homepage />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
   },
   {
     path: "/loading",
