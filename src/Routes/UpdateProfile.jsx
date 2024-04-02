@@ -69,7 +69,7 @@ export default function UpdateProfile({ userInfo }) {
 
         setLoading(true);
         setError('');
-        navigate('/');
+        navigate('/dashboard');
         // Update email
         // if (emailRef.current.value !== currentUser.email) {
 
