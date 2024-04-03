@@ -6,16 +6,16 @@ import QuizParent from '../Components/QuizParent';
 
 export default function Dashboard({ userInfo }) {
 
-    if (!userInfo) {
-        return <div>Loading...</div>;
-    }
+    // if (!userInfo) {
+    //     return <div>Loading...</div>;
+    // }
     
     
   return (
     <>
         <NavigationBar />
         <div className='text-center mb-4'>
-            <h1>Welcome, {userInfo.firstName}!</h1>
+            <h1>Welcome, !</h1>
         </div>
         <Container>
             <Row>

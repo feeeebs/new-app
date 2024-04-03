@@ -1,21 +1,21 @@
 import { Container, Row, Col} from 'react-bootstrap';
-import Signup from './Signup';
-import { useEffect } from 'react';
-import { useIdToken } from 'react-firebase-hooks/auth';
-import { auth } from '../Utilities/Firebase/firebaseConfig';
-import { useNavigate } from 'react-router-dom';
+//import { useEffect } from 'react';
+// import { auth } from '../Utilities/Firebase/firebaseConfig';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuthState } from 'react-firebase-hooks/auth';
+import Login from './Login';
 
 
 export default function Homepage() {
-  const user = useIdToken(auth);
-  const navigate = useNavigate();
+  // const user = useAuthState(auth);
+  // const navigate = useNavigate();
   
   // Check if user is authenticated and navigate to dashboard if so
   // useEffect(() => {
   //   if (user) {
   //     navigate('/dashboard');
   //   }
-  // }, [])
+  // }, [user])
   
   return (
     <>
@@ -30,7 +30,7 @@ export default function Homepage() {
             </div>
             <div>
               <h5 className='text-center'>Sign in or sign up to start stanning</h5>
-              <Signup />
+              <Login />
             </div>
           </Col>
         </Row>

@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import { Alert, Container, Card, Form, Button } from 'react-bootstrap';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import Dashboard from './Dashboard';
 
 export default function Signup() {
     const emailRef = useRef();
@@ -12,8 +13,9 @@ export default function Signup() {
 
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-
+    // TO DO: ADD ERROR FOR EMAIL EXISTS
     function handleSubmit(e) {
         e.preventDefault();
         setLoading(true);
@@ -27,7 +29,8 @@ export default function Signup() {
             .then((userCredential) => {
                 // Signed up
                 // const user = userCredential.user; <-- do i need that for anything? maybe can run a function here to add user to DB
-                navigate('/dashboard');
+                // navigate('/dashboard');
+                setIsLoggedIn(true);
             })
             .catch((error) => {
                 const errorCode = error.code;
@@ -35,6 +38,10 @@ export default function Signup() {
                 console.log(errorCode, errorMessage);
             })
             setLoading(false);
+    }
+
+    if (isLoggedIn) {
+        return <Dashboard />
     }
 
   return (

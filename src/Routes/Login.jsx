@@ -2,10 +2,12 @@ import React, { useState, useRef } from 'react'
 import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
+import Dashboard from './Dashboard';
 
 export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const auth = getAuth();
 
@@ -16,20 +18,27 @@ export default function Login() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    try {
-      setError('');
-      setLoading(true);
-      signInWithEmailAndPassword(auth, emailRef.current.value, passwordRef.current.value)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log('user: ', user);
-          navigate('/dashboard');
-        })
-    } catch {
-      setError('Failed to log in');
+    
+    setError('');
+    setLoading(true);
+
+    signInWithEmailAndPassword(auth, emailRef.current.value, passwordRef.current.value)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('user: ', user);
+        setIsLoggedIn(true);
+      })
+      .catch((error) => {
+        setError('Failed to log. Check your email or password and try again.');
+        setLoading(false);
+      })
     }
-    setLoading(false);
-  }
+
+    if (isLoggedIn) {
+      return <Dashboard />
+    }
+
+  
 
   return (
     <>
