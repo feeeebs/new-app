@@ -1,13 +1,14 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom';
 import { Alert, Container, Card, Form, Button } from 'react-bootstrap';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import Dashboard from './Dashboard';
 
 export default function Signup() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const passwordConfirmRef = useRef();
+    const firstNameRef = useRef();
+    const lastNameRef = useRef();
     const auth = getAuth();
     const navigate = useNavigate();
 
@@ -16,6 +17,8 @@ export default function Signup() {
       const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // TO DO: ADD ERROR FOR EMAIL EXISTS
+    // TO DO: WRITE FUNCTION TO ADD USER F/L NAMES TO DB
+
     function handleSubmit(e) {
         e.preventDefault();
         setLoading(true);
@@ -40,9 +43,11 @@ export default function Signup() {
             setLoading(false);
     }
 
-    if (isLoggedIn) {
-        return <Dashboard />
-    }
+    useEffect(() => {
+        if (isLoggedIn) {
+          navigate('/dashboard');
+        }
+      }, [isLoggedIn]);
 
   return (
     <>
@@ -53,6 +58,14 @@ export default function Signup() {
                 <h2 className='text-center mb-4'>Sign Up</h2>
                 {error && <Alert variant='danger'>{error}</Alert>}
                 <Form onSubmit={handleSubmit}>
+                <Form.Group id='first-name'>
+                        <Form.Label className='text-left'>First Name</Form.Label>
+                        <Form.Control type='text' ref={firstNameRef} required />
+                    </Form.Group>
+                    <Form.Group id='last-name'>
+                        <Form.Label className='text-left'>Last Name</Form.Label>
+                        <Form.Control type='text' ref={lastNameRef} required />
+                    </Form.Group>
                     <Form.Group id='email'>
                         <Form.Label className='text-left'>Email</Form.Label>
                         <Form.Control type='email' ref={emailRef} required />
