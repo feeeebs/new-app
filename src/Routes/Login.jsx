@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
 
 export default function Login() {
   const [error, setError] = useState('');
@@ -34,11 +33,11 @@ export default function Login() {
       })
     }
 
-    if (isLoggedIn) {
-      return <Dashboard />
-    }
-
-  
+    useEffect(() => {
+      if (isLoggedIn) {
+        navigate('/dashboard');
+      }
+    }, [isLoggedIn]);
 
   return (
     <>

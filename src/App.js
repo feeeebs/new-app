@@ -8,7 +8,7 @@ import UpdateProfile from './Routes/UpdateProfile';
 import AddNewLyrics from './Routes/AddNewLyrics';
 import NewLyricSearch from './Routes/NewLyricSearch';
 import EditFavoriteLyric from './Routes/EditFavoriteLyric';
-import { updateAll, updateEmail, updateFirstName, updateLastName } from './Utilities/Redux/userSlice';
+import { updateAll, updateEmail, updateFirstName, updateIsLoggedIn, updateLastName } from './Utilities/Redux/userSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSquid, useCollection } from '@squidcloud/react'
@@ -35,11 +35,15 @@ function App() {
           return await user.getIdToken();
         },
       });
+
       if (loading) return;
+
       if (!user) {
+        dispatch(updateIsLoggedIn(false));
         // Navigate to the homepage if the user is not logged in
         <Homepage />
       } else {
+        dispatch(updateIsLoggedIn(true));
         // Navigate to the dashboard if the user is logged in
         <Dashboard />
       }
@@ -86,25 +90,25 @@ function App() {
   
       // Check to see if current user exists in DB - triggers other functions to update Redux, insert new users into DB
       useEffect(() => {
-        if (id) {
+        if (user) {
           console.log('doop');
           (async () => {
             const doesUserExist = await userExists();
-            // console.log('does the user exist? ', doesUserExist);
+            console.log('does the user exist? ', doesUserExist);
             
             if (doesUserExist) {
               // if user exists in DB, update state with the stored information
-              updateUserInfo();
+              getUserInfo();
             }
             if (!doesUserExist) {
-                // console.log('User does not exist - about to run insertUser');
+                console.log('User does not exist - about to run insertUser');
               // if user doesn't exist in DB yet, insert them into the DB
               insertNewUser();
             }
           })();
         }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [id]);
+      }, [user]);
   
   
       // Function to check if user file exists in the DB
@@ -112,7 +116,7 @@ function App() {
         const userDoc = await usersCollection
         .doc({ id: id })
         .snapshot();
-        // console.log('userQuery during userExists: ', userDoc);
+        console.log('userQuery during userExists: ', userDoc);
         if (userDoc) {
           // if the user is in the DB, return true
           return true;
@@ -124,23 +128,24 @@ function App() {
     };
   
       // Function to query Postgres for user data and update user info stored in Redux
-      const updateUserInfo = async () => {
+      const getUserInfo = async () => {
         try {
-          // console.log('running updateUserInfo function')
-          const userById = await usersCollection
+          console.log('running getUserInfo function')
+          const userSnapshot = await usersCollection
               .query()
               .where('id', '==', id)
+              .dereference()
               .snapshot();
-    
-          for (const docRef of userById) {
-              // console.log('name during updateUserInfo: ', docRef.data.name);
-              // console.log('email during updateUserInfo: ', docRef.data.email);
-              dispatch(updateEmail(docRef.data.email));
-              dispatch(updateFirstName(docRef.data.first_name));
-              dispatch(updateLastName(docRef.data.last_name))
-          }
+
+          console.log('userSnapshot during getUserInfo: ', userSnapshot);
+          const { first_name, last_name, email } = userSnapshot[0];
+          console.log('first name during getUserInfo: ', first_name);
+          dispatch(updateFirstName(first_name));
+          dispatch(updateLastName(last_name));
+          dispatch(updateEmail(email));
+
         } catch (error) {
-          console.error('Error in updateUserInfo: ', error);
+          console.error('Error in getUserInfo: ', error);
         }     
       };
   

@@ -2,9 +2,12 @@ import React, { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { updateIsLoggedIn } from "../Utilities/Redux/userSlice";
 
 const LogoutButton = () => {
   const auth = getAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,13 +17,14 @@ const LogoutButton = () => {
       if (!user) {
         // User is signed out
         console.log("about to navigate?");
-        navigate('/', { replace: true });
+        dispatch(updateIsLoggedIn(false));
+        return navigate('/login');
       }
     });
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [auth, navigate]);
+  }, [auth]);
 
   function handleLogout() {
     signOut(auth)

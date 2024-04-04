@@ -8,6 +8,7 @@ export const userSlice = createSlice({
             email: "",
             firstName: "",
             lastName: "",
+            isLoggedIn: false,
         },
         albumJourney: {}
     },
@@ -24,11 +25,14 @@ export const userSlice = createSlice({
         updateLastName: (state, action) => {
             state.userInfo.lastName = action.payload;
         },
+        updateIsLoggedIn: (state, action) => {
+            state.userInfo.isLoggedIn = action.payload;
+        },
         updateAll: (state, action) => {
             state.userInfo = { ...state.userInfo, ...action.payload };
         },
     }
 })
 
-export const { updateAll, updateId, updateEmail, updateFirstName, updateLastName } = userSlice.actions
+export const { updateAll, updateId, updateEmail, updateFirstName, updateLastName, updateIsLoggedIn } = userSlice.actions
 export default userSlice.reducer
