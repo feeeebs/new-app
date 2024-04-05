@@ -1,7 +1,7 @@
 import React from 'react'
 import { Container, Navbar } from 'react-bootstrap'
 
-export default function NavigationBar() {
+export default function NavigationBarNoAuth() {
 
   return (
     <Container className='mb-3'>
