@@ -18,6 +18,7 @@ import { useIdToken } from 'react-firebase-hooks/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import Login from './Routes/Login';
 import Signup from './Routes/Signup';
+import ResetPassword from './Routes/ResetPassword';
 
 function App() {
     const dispatch = useDispatch();
@@ -119,6 +120,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/loading",
