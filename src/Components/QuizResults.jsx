@@ -62,7 +62,11 @@ export default function QuizResults(props) {
   // TO DO: add album descriptions as <Card.Text>
 
 if (loading) {
-  return <h3>Loading...</h3>
+  return (
+    <div className='d-flex flex-column align-items-center justify-content-center'>
+      <div>You're the only one of you</div>
+      <div>Baby, that's the fun of you</div>
+  </div>)
 }
 
   return (

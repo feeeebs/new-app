@@ -4,143 +4,134 @@ import ErrorPage from './Routes/ErrorPage';
 import LoadingPage from './Routes/LoadingPage';
 import Dashboard from './Routes/Dashboard';
 import Profile from './Routes/Profile';
-import UpdateProfile from './Routes/UpdateProfile';
 import AddNewLyrics from './Routes/AddNewLyrics';
 import NewLyricSearch from './Routes/NewLyricSearch';
 import EditFavoriteLyric from './Routes/EditFavoriteLyric';
-import { updateAll, updateEmail, updateFirstName, updateLastName } from './Utilities/Redux/userSlice';
+import { updateEmail, updateFirstName, updateId, updateIsLoggedIn, updateLastName } from './Utilities/Redux/userSlice';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useAuth0 } from '@auth0/auth0-react'
 import { useSquid, useCollection } from '@squidcloud/react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import PrivateRoute from './Components/PrivateRoute';
+import { auth } from './Utilities/Firebase/firebaseConfig';
+import { useIdToken } from 'react-firebase-hooks/auth';
+import { onAuthStateChanged } from 'firebase/auth';
+import Login from './Routes/Login';
+import Signup from './Routes/Signup';
+import ResetPassword from './Routes/ResetPassword';
 
 function App() {
-    // Get user token
-    const { isLoading, user, getAccessTokenSilently, isAuthenticated } = useAuth0();
-    const { setAuthProvider } = useSquid();
     const dispatch = useDispatch();
-  
-    useEffect(() => {
-      if (!isLoading && user) {
-        setAuthProvider({
-          integrationId: 'auth0Id',
-          getToken: () => user && getAccessTokenSilently(),
-        });
-      }
-    }, [isLoading, user, getAccessTokenSilently, setAuthProvider]);
-  
+    // Get Firebase Authentication state
+    const [user, loading, error] = useIdToken(auth);
+    const { setAuthProvider } = useSquid();
+
     const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
-  
-    // ***** TO DO EVENTUALLY ***** -- update to only have the user information query/update once after login instead of every time page loads
-    // ^^ will setting up the session stuff fix that?
-  
-      // Store initial user info in Redux based on Auth0 default values -- values will update later if user has overwritten this in DB
-      useEffect(() => {
-        if (isAuthenticated && user) {
-          console.log('Authenticated and user stuff running')
-          // Split out first/last names
-          const fullName = user.name;
-          const [firstName, ...lastNames] = fullName.split(' ');
-          const lastName = lastNames.join(' ');
-  
-          console.log('first name: ', firstName);
-          console.log('last name: ', lastName);
-          dispatch(updateAll({
-            id: user.sub,
-            email: user.email,
-            firstName: firstName,
-            lastName: lastName,
-          }))
+
+    useEffect(() => {
+      // Pass the auth token to the Squid backend
+      setAuthProvider({
+        integrationId: 'firebase_auth_id',
+        getToken: async () => {
+          if (!user) return undefined;
+          return await user.getIdToken();
+        },
+      });
+
+      if (loading) return;
+
+      if (!user) {
+        dispatch(updateIsLoggedIn(false));
+        // Navigate to the homepage if the user is not logged in
+        <Homepage />
+      } else {
+        dispatch(updateIsLoggedIn(true));
+        // Navigate to the dashboard if the user is logged in
+        <Dashboard />
+      }
+    }, [user, loading, setAuthProvider]);
+
+    // Watch for changes in auth state
+    useEffect(() => {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log('User is signed in: ', user);
+          const uid = user.uid;
+          dispatch(updateId(uid));
+
+          const email = user.email;
+          usersCollection.doc({ id: uid }).insert({
+            email: email,
+          })
+            .then(() => console.log("User email updated successfully"))
+            .catch((err) => console.error("Error updating user email: ", err));
+        
+        } else {
+          console.log('No user is signed in');
         }
-      }, [dispatch, isAuthenticated, user]);
-      
-      // Store initial user info in variables to use here
-      const userInformation = useSelector(state => state.user.userInfo);
-      const { id, email, firstName, lastName } = userInformation;
+      });
+    }, [])
+  
     
   
-      // Check to see if current user exists in DB - triggers other functions to update Redux, insert new users into DB
+      // Store initial user info in variables to use here
+      const userInformation = useSelector(state => state.user.userInfo);
+      const { id } = userInformation;
+    
+  
+      // Get current user info from Postgres
       useEffect(() => {
-        if (id) {
+        if (user) {
           console.log('doop');
           (async () => {
-            const doesUserExist = await userExists();
-            // console.log('does the user exist? ', doesUserExist);
-            
-            if (doesUserExist) {
-              // if user exists in DB, update state with the stored information
-              updateUserInfo();
-            }
-            if (!doesUserExist) {
-                // console.log('User does not exist - about to run insertUser');
-              // if user doesn't exist in DB yet, insert them into the DB
-              insertNewUser();
-            }
+            getUserInfo();
           })();
         }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [id]);
+      }, [user]);
   
-  
-      // Function to check if user file exists in the DB
-      const userExists = async () => {
-        const userDoc = await usersCollection
-        .doc({ id: id })
-        .snapshot();
-        // console.log('userQuery during userExists: ', userDoc);
-        if (userDoc) {
-          // if the user is in the DB, return true
-          return true;
-        }
-        else {
-          // if the user is not in the DB, return false
-          return false;
-        }
-    };
   
       // Function to query Postgres for user data and update user info stored in Redux
-      const updateUserInfo = async () => {
+      const getUserInfo = async () => {
         try {
-          // console.log('running updateUserInfo function')
-          const userById = await usersCollection
+          console.log('running getUserInfo function')
+          const userSnapshot = await usersCollection
               .query()
               .where('id', '==', id)
+              .dereference()
               .snapshot();
-    
-          for (const docRef of userById) {
-              // console.log('name during updateUserInfo: ', docRef.data.name);
-              // console.log('email during updateUserInfo: ', docRef.data.email);
-              dispatch(updateEmail(docRef.data.email));
-              dispatch(updateFirstName(docRef.data.first_name));
-              dispatch(updateLastName(docRef.data.last_name))
-          }
+
+          console.log('userSnapshot during getUserInfo: ', userSnapshot);
+          const { first_name, last_name, email } = userSnapshot[0];
+          console.log('first name during getUserInfo: ', first_name);
+          dispatch(updateFirstName(first_name));
+          dispatch(updateLastName(last_name));
+          dispatch(updateEmail(email));
+
         } catch (error) {
-          console.error('Error in updateUserInfo: ', error);
+          console.error('Error in getUserInfo: ', error);
         }     
       };
   
-  
-  // Function to insert data into Postgres for new user
-  const insertNewUser = async () => {
-    console.log("Running inserNewUser");
-    console.log("Form data being inserted: ", userInformation);
-    await usersCollection.doc({ id: id }).insert({
-        id: id,
-        first_name: firstName,
-        last_name: lastName,
-        email: email,
-    })
-        .then(() => console.log("New user inserted into DB successfully"))
-        .catch((err) => console.error("Error inserting new user into DB: ", err));
-  }
+
 // Routing
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Homepage />,
     errorElement: <ErrorPage />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/loading",
@@ -153,10 +144,6 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <PrivateRoute><Profile userInfo={userInformation} /></PrivateRoute>,
-  },
-  {
-    path: "/update-profile",
-    element: <PrivateRoute><UpdateProfile userInfo={userInformation} /></PrivateRoute>,
   },
   {
     path: "/add-lyrics/:lyricId",
@@ -173,8 +160,8 @@ const router = createBrowserRouter([
 
 ]);
 
-// If auth0 is checking authentication, return loading page
-if (isLoading) {
+// If firebase is checking authentication, return loading page
+if (loading) {
   return <LoadingPage />;
 }
 

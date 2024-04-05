@@ -1,12 +1,32 @@
 import React from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
 import { Navigate } from 'react-router-dom'
+import { getAuth } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function PrivateRoute({ children }) {
-  // const { isAuthenticated } = useAuth0();
+  const auth = getAuth();
+  const [ user, loading ] = useAuthState(auth);
 
-  // return isAuthenticated ? children : <Navigate to="/dashboard" />;
-  const { user } = useAuth0()
+  // useEffect(() => {
+  //   onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       setCurrentUser(user);
+  //       setLoading(false);
+  //     }
+  //   });
+  // }, [auth])
+
+//   useEffect(() => {
+//     onAuthStateChanged(auth, (user) => {
+//         setCurrentUser(user);
+
+//     });
+// }, [auth]);
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return (
     user ? children: <Navigate to="/" />
   )
