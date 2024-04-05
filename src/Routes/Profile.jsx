@@ -104,7 +104,7 @@ useEffect(() => {
       console.log("handleFormSubmit running");
 
       // Update Firebase if email has changed
-      if (emailRef.current.value !== userInfo.email) {
+      if (emailRef.current.value) {
         console.log('updating email');
         // Sends a verification email to the user; user's email updates in postgres next time they log in
         verifyBeforeUpdateEmail(auth.currentUser, emailRef.current.value)
@@ -112,9 +112,7 @@ useEffect(() => {
             console.log('Email updated!');
             setSuccessMessage('Email updated! Please check your email to verify the change.');
           }).catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log('Error updating user email: ', errorCode, errorMessage);
+            console.log('Error updating user email: ', error.code, error.message);
             setError('Error updating email. Please try again.');
           })
       }
@@ -124,9 +122,9 @@ useEffect(() => {
         await updateData();
         // Update Redux
         dispatch(updateAll(formData))
+        setSuccessMessage('Profile updated!');
         console.log("Check to see if it did anything");
       }
-
 
       setLoading(true);
 
