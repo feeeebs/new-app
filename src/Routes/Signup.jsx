@@ -68,7 +68,7 @@ export default function Signup() {
     <>
     <Container className='d-flex align-items-center justify-content-center' style={{ minHeight: '50vh' }}>
         <div className='w-100' style={{ maxWidth: '400px' }}>
-        <Card>
+        <Card className='mt-4'>
             <Card.Body>
                 <h2 className='text-center mb-4'>Sign Up</h2>
                 {error && <Alert variant='danger'>{error}</Alert>}
