@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Container, Form } from 'react-bootstrap';
 import NavigationBar from "../Components/NavigationBar";
-import { getAuth, sendPasswordResetEmail, updateEmail } from "firebase/auth";
+import { getAuth, sendPasswordResetEmail, verifyBeforeUpdateEmail } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { updateAll } from '../Utilities/Redux/userSlice';
@@ -88,28 +88,28 @@ useEffect(() => {
             });
       }
 
-  //         // Handle email update
-  //   const handleEmailUpdate = async () => {
-  //     updateEmail(auth.currentUser, emailRef.current.value)
-  //         .then(() => {
-  //             // Email updated!
-  //             console.log('Email updated!');
-  //             updateData();
-  //         }).catch((error) => {
-  //             const errorCode = error.code;
-  //             const errorMessage = error.message;
-  //             console.log('Error updating user email: ', errorCode, errorMessage);
-  //         });
-        
-  // }
 
        // Handle form submissions
+       // TO DO -- SHOW MESSAGES ON SUBMIT FOR EMAIL/PASSWORD CHANGES TO CHECK EMAIL
     const handleSubmit = async (e) => {
       e.preventDefault();
       // TO DO - validation for email and password
       console.log("handleFormSubmit running");
-      // Update firebase
-      updateEmail(auth.currentUser, emailRef.current.value);
+
+      // Update Firebase if email has changed
+      if (emailRef.current.value !== userInfo.email) {
+        console.log('updating email');
+        // Sends a verification email to the user; user's email updates in postgres next time they log in
+        verifyBeforeUpdateEmail(auth.currentUser, emailRef.current.value)
+          .then(() => {
+            console.log('Email updated!');
+          }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log('Error updating user email: ', errorCode, errorMessage);
+          })
+      }
+
       // Update Squid DB
       await updateData();
       // Update Redux
