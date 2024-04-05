@@ -76,7 +76,7 @@ useEffect(() => {
 
       // Handle password reset
       const handlePasswordReset = async () => {
-        sendPasswordResetEmail(auth, emailRef.current.value)
+        sendPasswordResetEmail(auth, userInfo.email)
             .then(() => {
                 // Password reset email sent!
                 console.log('Password reset email sent!');
