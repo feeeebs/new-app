@@ -18,7 +18,7 @@ const LogoutButton = () => {
         // User is signed out
         console.log("about to navigate?");
         dispatch(updateIsLoggedIn(false));
-        return navigate('/login');
+        return navigate('/');
       }
     });
 
