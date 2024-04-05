@@ -26,6 +26,8 @@ function App() {
     const [user, loading, error] = useIdToken(auth);
     const { setAuthProvider } = useSquid();
 
+    const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
+
     useEffect(() => {
       // Pass the auth token to the Squid backend
       setAuthProvider({
@@ -55,8 +57,14 @@ function App() {
         if (user) {
           console.log('User is signed in: ', user);
           const uid = user.uid;
-
           dispatch(updateId(uid));
+
+          const email = user.email;
+          usersCollection.doc({ id: uid }).insert({
+            email: email,
+          })
+            .then(() => console.log("User email updated successfully"))
+            .catch((err) => console.error("Error updating user email: ", err));
         
         } else {
           console.log('No user is signed in');
@@ -64,7 +72,7 @@ function App() {
       });
     }, [])
   
-    const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
+    
   
       // Store initial user info in variables to use here
       const userInformation = useSelector(state => state.user.userInfo);

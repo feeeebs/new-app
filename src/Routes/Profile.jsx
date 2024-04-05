@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Container, Form } from 'react-bootstrap';
 import NavigationBar from "../Components/NavigationBar";
 import { getAuth, sendPasswordResetEmail, verifyBeforeUpdateEmail } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ const Profile = ({ userInfo }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Set default form data
   const [formData, setFormData] = useState({
@@ -76,15 +77,19 @@ useEffect(() => {
 
       // Handle password reset
       const handlePasswordReset = async () => {
+        setSuccessMessage('');
+        setError('');
         sendPasswordResetEmail(auth, userInfo.email)
             .then(() => {
                 // Password reset email sent!
                 console.log('Password reset email sent!');
+                setSuccessMessage('Password reset email sent. Please check your email for instructions.');
             })
             .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.log('Error sending password reset email: ', errorCode, errorMessage);
+                setError('Error sending password reset email. Please try again.');
             });
       }
 
@@ -93,6 +98,8 @@ useEffect(() => {
        // TO DO -- SHOW MESSAGES ON SUBMIT FOR EMAIL/PASSWORD CHANGES TO CHECK EMAIL
     const handleSubmit = async (e) => {
       e.preventDefault();
+      setSuccessMessage('');
+      setError('');
       // TO DO - validation for email and password
       console.log("handleFormSubmit running");
 
@@ -103,23 +110,26 @@ useEffect(() => {
         verifyBeforeUpdateEmail(auth.currentUser, emailRef.current.value)
           .then(() => {
             console.log('Email updated!');
+            setSuccessMessage('Email updated! Please check your email to verify the change.');
           }).catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.log('Error updating user email: ', errorCode, errorMessage);
+            setError('Error updating email. Please try again.');
           })
       }
 
-      // Update Squid DB
-      await updateData();
-      // Update Redux
-      dispatch(updateAll(formData))
-      console.log("Check to see if it did anything");
+      if (!error) {
+        // Update Squid DB
+        await updateData();
+        // Update Redux
+        dispatch(updateAll(formData))
+        console.log("Check to see if it did anything");
+      }
+
 
       setLoading(true);
-      setError('');
-      navigate('/dashboard');
-          
+
   }
 
 
@@ -128,6 +138,8 @@ useEffect(() => {
       <NavigationBar />
       <Container className='align-items-center justify-content-center' style={{ minHeight: '50vh', flexDirection: 'column' }}>
         <h2 className="text-center mb-4">{userInfo.firstName}'s Profile</h2>
+        {error && <Alert variant="danger">{error}</Alert>}
+        {successMessage && <Alert variant="success">{successMessage}</Alert>}
         <div>
           <Form onSubmit={handleSubmit}>
               <Form.Group className="mb-3" controlId="formBasicEmail">

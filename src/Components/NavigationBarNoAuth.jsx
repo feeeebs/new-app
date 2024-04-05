@@ -1,7 +1,5 @@
 import React from 'react'
-import { Container, Col, Form, Nav, Navbar, Row } from 'react-bootstrap'
-import LogoutButton from './Logout'
-import { Link } from 'react-router-dom'
+import { Container, Navbar } from 'react-bootstrap'
 
 export default function NavigationBar() {
 
