@@ -4,7 +4,6 @@ import ErrorPage from './Routes/ErrorPage';
 import LoadingPage from './Routes/LoadingPage';
 import Dashboard from './Routes/Dashboard';
 import Profile from './Routes/Profile';
-import UpdateProfile from './Routes/UpdateProfile';
 import AddNewLyrics from './Routes/AddNewLyrics';
 import NewLyricSearch from './Routes/NewLyricSearch';
 import EditFavoriteLyric from './Routes/EditFavoriteLyric';
@@ -132,10 +131,6 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <PrivateRoute><Profile userInfo={userInformation} /></PrivateRoute>,
-  },
-  {
-    path: "/update-profile",
-    element: <PrivateRoute><UpdateProfile userInfo={userInformation} /></PrivateRoute>,
   },
   {
     path: "/add-lyrics/:lyricId",

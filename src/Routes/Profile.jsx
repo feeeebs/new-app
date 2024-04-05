@@ -1,35 +1,161 @@
-
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Card } from 'react-bootstrap';
+import { Button, Container, Form } from 'react-bootstrap';
 import NavigationBar from "../Components/NavigationBar";
+import { getAuth, sendPasswordResetEmail, updateEmail } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { updateAll } from '../Utilities/Redux/userSlice';
+import { useCollection } from '@squidcloud/react';
 
+// TO DO: ADD DISPLAY NAME COLUMN TO USERS TABLE IN POSTGRES
 const Profile = ({ userInfo }) => {
+
+  const auth = getAuth();
+  const emailRef = useRef();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Set default form data
+  const [formData, setFormData] = useState({
+    id: userInfo.id,
+    firstName: '',
+    lastName: '',
+    email: '',
+  });
+
+  useEffect(() => {
+    if (userInfo) {
+      setFormData({
+        id: userInfo.id,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
+        email: userInfo.email,
+      });
+    }
+  }, [userInfo]);
+
+useEffect(() => {
+  console.log('form data: ', formData);
+}, [formData]);
+
+  const usersCollection = useCollection('users', 'postgres_id'); // Reference to users collection in DB
 
   if (!userInfo) {
     return <div>Loading ...</div>;
   }
 
+      // Function to update data
+      const updateData = async () => {
+        console.log("Running updateData");
+        console.log("Form data being inserted: ", formData);
+        await usersCollection.doc({ id: formData.id }).insert({
+            //id: formData.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+        })
+            .then(() => console.log("User data updated successfully"))
+            .catch((err) => console.error("Error inserting user data: ", err));
+        console.log("finished DB update");
+    };
+
+
+    // Track form inputs
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+        //console.log("Form data: ", formData);
+    }
+
+      // Handle password reset
+      const handlePasswordReset = async () => {
+        sendPasswordResetEmail(auth, emailRef.current.value)
+            .then(() => {
+                // Password reset email sent!
+                console.log('Password reset email sent!');
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                console.log('Error sending password reset email: ', errorCode, errorMessage);
+            });
+      }
+
+  //         // Handle email update
+  //   const handleEmailUpdate = async () => {
+  //     updateEmail(auth.currentUser, emailRef.current.value)
+  //         .then(() => {
+  //             // Email updated!
+  //             console.log('Email updated!');
+  //             updateData();
+  //         }).catch((error) => {
+  //             const errorCode = error.code;
+  //             const errorMessage = error.message;
+  //             console.log('Error updating user email: ', errorCode, errorMessage);
+  //         });
+        
+  // }
+
+       // Handle form submissions
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      // TO DO - validation for email and password
+      console.log("handleFormSubmit running");
+      // Update firebase
+      updateEmail(auth.currentUser, emailRef.current.value);
+      // Update Squid DB
+      await updateData();
+      // Update Redux
+      dispatch(updateAll(formData))
+      console.log("Check to see if it did anything");
+
+      setLoading(true);
+      setError('');
+      navigate('/dashboard');
+          
+  }
+
+
   return (
     <>
       <NavigationBar />
+      <Container className='align-items-center justify-content-center' style={{ minHeight: '50vh', flexDirection: 'column' }}>
         <h2 className="text-center mb-4">{userInfo.firstName}'s Profile</h2>
-        <Card>
-            <Card.Body>
-                <div>
-                  <strong>Email: {userInfo.email}</strong> 
-                </div>
-                <div>
-                  <strong>First Name: {userInfo.firstName}</strong> 
-                </div>
-                <div>
-                  <strong>Last Name: {userInfo.lastName}</strong> 
-                </div>
-                <Link to="/update-profile" className="btn btn-primary w-100 mt-3">Update Profile</Link>
+        <div>
+          <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                  <Form.Label>Email address</Form.Label>
+                    <Form.Control type="email" name="email" placeholder={formData.email} ref={emailRef} onChange={handleInputChange}/>
+                      <Form.Text className="text-muted">
+                        Please enter the email you'd like to use with Standom.
+                      </Form.Text>
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="formBasicFirstName">
+                  <Form.Label>Display Name</Form.Label>
+                    <Form.Control type="text" name="firstName" onChange={handleInputChange} placeholder={formData.firstName} />
+                      <Form.Text className="text-muted">
+                        Tell us what you'd like to be called.
+                      </Form.Text>
+              </Form.Group>
 
-            </Card.Body>
-        </Card>
-      </>
+              <Link onClick={handlePasswordReset}>Reset Password</Link>
+
+              <div>
+              <Button variant="primary" type="submit" className="mt-4">
+                Submit
+              </Button>
+              </div>
+      </Form>
+      </div>
+      </Container>
+    </>
   );
 };
 
