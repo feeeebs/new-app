@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Card, Form } from 'react-bootstrap';
 import { useCollection } from '@squidcloud/react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFinalQuiz, setQuestions, setFirstQuestion, updateQuizTaken, updateUserAnswers } from '../Utilities/Redux/quizSlice';
+import { setFinalQuiz, setQuestions, setFirstQuestion, updateUserAnswers } from '../Utilities/Redux/quizSlice';
 import { v4 as uuidv4 } from 'uuid';
+import { updateAlbumQuizTaken } from '../Utilities/Redux/userSlice';
 
 
 export default function Quiz(props) {
@@ -186,7 +187,7 @@ export default function Quiz(props) {
             setTotalScore(updatedTotalScore);
 
             // Update quiz status in Redux
-            dispatch(updateQuizTaken(true));
+            dispatch(updateAlbumQuizTaken(true));
             
             // Write user answers to DB
             insertUserAnswersToDb();

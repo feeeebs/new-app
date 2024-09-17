@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Container, Row } from 'react-bootstrap';
 import MyFavoriteLyrics from '../Components/MyFavoriteLyrics';
 import NavigationBar from '../Components/NavigationBar';
 import QuizParent from '../Components/QuizParent';
 import { useSelector } from 'react-redux';
 
-export default function Dashboard() {
+export default function Dashboard({ userInfo }) {
 
     // Store initial user info in variables to use here
     const userInformation = useSelector(state => state.user.userInfo);
@@ -22,7 +22,7 @@ export default function Dashboard() {
           </div>
           <Container>
             <Row>
-              <QuizParent />
+              <QuizParent quizStatus={userInfo.albumQuizTaken} />
             </Row>
             <Row className='mt-3'>
               <MyFavoriteLyrics />

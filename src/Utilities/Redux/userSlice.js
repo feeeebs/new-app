@@ -9,6 +9,7 @@ export const userSlice = createSlice({
             firstName: "",
             lastName: "",
             isLoggedIn: false,
+            albumQuizTaken: false,
         },
         albumJourney: {}
     },
@@ -28,11 +29,14 @@ export const userSlice = createSlice({
         updateIsLoggedIn: (state, action) => {
             state.userInfo.isLoggedIn = action.payload;
         },
+        updateAlbumQuizTaken: (state, action) => {
+            state.userInfo.albumQuizTaken = action.payload;
+        },
         updateAll: (state, action) => {
             state.userInfo = { ...state.userInfo, ...action.payload };
         },
     }
 })
 
-export const { updateAll, updateId, updateEmail, updateFirstName, updateLastName, updateIsLoggedIn } = userSlice.actions
+export const { updateAll, updateId, updateEmail, updateFirstName, updateLastName, updateIsLoggedIn, updateAlbumQuizTaken } = userSlice.actions
 export default userSlice.reducer

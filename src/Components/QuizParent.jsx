@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux';
 import QuizResults from './QuizResults';
 import Quiz from './Quiz';
 
 
-export default function QuizParent() {
-    const quizStatus = useSelector(state => state.quiz.quizTaken);
+export default function QuizParent({ quizStatus }) {
     const [albumJourney, setAlbumJourney] = useState([]);
 
     console.log('quizStatus: ', quizStatus);
