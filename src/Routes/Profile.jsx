@@ -53,8 +53,7 @@ useEffect(() => {
       const updateData = async () => {
         console.log("Running updateData");
         console.log("Form data being inserted: ", formData);
-        await usersCollection.doc({ id: formData.id }).insert({
-            //id: formData.id,
+        await usersCollection.doc({ id: formData.id }).update({
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,

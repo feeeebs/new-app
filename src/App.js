@@ -60,7 +60,7 @@ function App() {
           dispatch(updateId(uid));
 
           const email = user.email;
-          usersCollection.doc({ id: uid }).insert({
+          usersCollection.doc({ id: uid }).update({
             email: email,
           })
             .then(() => console.log("User email updated successfully"))
@@ -102,8 +102,9 @@ function App() {
               .snapshot();
 
           console.log('userSnapshot during getUserInfo: ', userSnapshot);
-          const { first_name, last_name, email } = userSnapshot[0];
+          const { first_name, last_name, email, quiz_taken } = userSnapshot[0];
           console.log('first name during getUserInfo: ', first_name);
+          console.log('quiz taken during getUserInfo: ', quiz_taken);
           dispatch(updateFirstName(first_name));
           dispatch(updateLastName(last_name));
           dispatch(updateEmail(email));

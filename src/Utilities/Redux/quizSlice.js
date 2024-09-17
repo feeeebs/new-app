@@ -11,12 +11,16 @@ export const quizSlice = createSlice({
         setFinalQuiz: (state, action) => {
             state.finalQuiz = action.payload;
         },
-        updateQuizTaken: (state) => {
-            state.quizTaken = !state.quizTaken;
+        updateQuizTakenFirstTime: (state, action) => {
+            state.quizTaken = action.payload;
+        }
+        ,
+        updateQuizTaken: (state, action) => {
+            state.quizTaken = action.payload;
         },
         updateUserAnswers: (state, action) => {
             state.userAnswers = {...state.userAnswers, ...action.payload};
-        }
+        },
     }
 });
 
@@ -39,7 +43,7 @@ export const quizQuestionsSlice = createSlice({
 
 
 export default quizSlice.reducer;
-export const { setFinalQuiz, updateQuizTaken, updateUserAnswers } = quizSlice.actions;
+export const { setFinalQuiz, updateQuizTakenFirstTime, updateQuizTaken, updateUserAnswers } = quizSlice.actions;
 
 export const quizQuestionsReducer = quizQuestionsSlice.reducer;
 export const { setQuestions, setFirstQuestion } = quizQuestionsSlice.actions;

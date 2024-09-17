@@ -21,13 +21,13 @@ export default function Quiz(props) {
     const userQuizCollection = useCollection('user_quizzes', 'postgres_id'); // DB reference to user quizzes
     const quizScoringCollection = useCollection('quiz_scoring', 'postgres_id'); // DB reference to quiz scores
     const albumsCollection = useCollection('albums', 'postgres_id'); // DB reference to albums
+    const usersCollection = useCollection('users', 'postgres_id'); // DB reference to users
 
     const createQuiz = []; // Just used to store quiz as it's being collected from the DB
 
     const dispatch = useDispatch();
     const currentQuestion = useSelector(state => state.quizQuestions.question);
     const questionIndex = useSelector(state => state.quizQuestions.currentIndex);
-
     const userAnswers = useSelector(state => state.quiz.userAnswers);
 
     useEffect(() => {
@@ -143,14 +143,6 @@ export default function Quiz(props) {
             const answerId = parseInt(userAnswers[questionId]);
             const userAnswerId = uuidv4();
 
-            // console.log('user_answer_id: ', userAnswerId);
-            // console.log('user_id: ', userId);
-            // console.log('question_id: ', parseInt(questionId));
-            // console.log('answer_id: ', answerId);
-            //console.log('timestamp: ', formattedDate);
-
-
-
             await userQuizCollection.doc({ user_answer_id: userAnswerId }).insert({
                 user_answer_id: userAnswerId,
                 user_id: userId,
@@ -161,8 +153,15 @@ export default function Quiz(props) {
             .catch((err) => console.error("Error inserting user answers into DB: ", err));
         }
       }
-    
 
+      // Function to update the user's quiz status in the DB
+      const insertQuizStatusToDb = async () => {
+        await usersCollection.doc({ id: userId }).update({
+            quiz_taken: 'true',
+        }).then(() => console.log("Quiz status updated successfully in DB"))
+        .catch((err) => console.error("Error updating quiz status in DB: ", err));
+    }
+    
     // Handle user answers on answer submission
     async function handleSubmit(event) {
         event.preventDefault();
@@ -186,16 +185,14 @@ export default function Quiz(props) {
             });
             setTotalScore(updatedTotalScore);
 
-            // PUT BACK TOTAL SCORE STUFF HERE IF IT DOENS'T WORK
-
             // Update quiz status in Redux
             dispatch(updateQuizTaken(true));
             
             // Write user answers to DB
             insertUserAnswersToDb();
 
-            // take the scoreObject and order it by scores, biggest to smallest
-            // display the albums in that order
+            // Update the user's quiz status in the DB
+            insertQuizStatusToDb();
         } else {
             // Get the answer's scores from the quiz_scoring table
             const getScores = async () => {

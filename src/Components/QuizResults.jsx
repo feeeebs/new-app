@@ -44,7 +44,7 @@ export default function QuizResults(props) {
                     return item;
                 }
             });
-            console.log('updatedAlbumJourney: ', updatedAlbumJourney);
+            // console.log('updatedAlbumJourney: ', updatedAlbumJourney);
             // Update albumJourney state
             props.setAlbumJourney(updatedAlbumJourney);
             }
